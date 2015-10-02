@@ -1,0 +1,24 @@
+{
+  "name": "espresso",
+  "version": "0.1.0",
+  "description": "A coffee to ES2015 code converter",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard index.js"
+  },
+  "author": "HipsterBrown",
+  "license": "MIT",
+  "bin": {
+    "espresso": "index.js"
+  },
+  "dependencies": {
+    "coffee-script": "^1.10.0",
+    "jscodeshift": "^0.3.7",
+    "node-dir": "^0.1.10",
+    "nomnom": "^1.8.1"
+  },
+  "devDependencies": {
+    "standard": "^5.3.1",
+    "tap": "^2.0.0"
+  }
+}
