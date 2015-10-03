@@ -1,8 +1,8 @@
 module.exports = jsx
 
 function jsx (file, api) {
-  var j = api.jscodeshift;
-  var root = j(file.source);
+  var j = api.jscodeshift
+  var root = j(file.source)
 
   var REACT_DOM = {
     callee: {
@@ -70,7 +70,7 @@ function jsx (file, api) {
   .filter(function (p) {
     var funcName = p.node.callee.name
     if (funcName) {
-      var firstLetter = funcName.slice(0, -funcName.length+1)
+      var firstLetter = funcName.slice(0, -funcName.length + 1)
       return /[A-Z]/.test(firstLetter)
     }
   })
@@ -78,5 +78,5 @@ function jsx (file, api) {
     return buildJSX(p.node)
   })
 
-  return root.toSource();
+  return root.toSource()
 }

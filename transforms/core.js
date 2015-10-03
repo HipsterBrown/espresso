@@ -41,15 +41,6 @@ function core (file, api) {
       }
     }
   }
-  var CREATE_CLASS = {
-    callee: {
-      type: 'MemberExpression',
-      property: { name: 'createClass'}
-    },
-    arguments: [
-      {type: 'ObjectExpression'}
-    ]
-  }
   var CLASS_METHOD = {
     value: {
       type: 'FunctionExpression'
@@ -97,10 +88,10 @@ function core (file, api) {
 
   root
   .find(j.CallExpression, FUNCTION_BIND)
-  .replaceWith(function (p) { 
+  .replaceWith(function (p) {
     return j.arrowFunctionExpression([], p.node.callee.body)
   })
-  .find(j.Identifier, { name: '_this'})
+  .find(j.Identifier, {name: '_this'})
   .replaceWith(j.identifier('this'))
 
   return root.toSource()

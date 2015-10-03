@@ -4,17 +4,17 @@
   "description": "A coffee to ES2015 code converter",
   "main": "index.js",
   "scripts": {
-    "test": "standard index.js"
+    "test": "standard index.js",
+    "reset": "rm -rf examples/*.es6"
   },
   "author": "HipsterBrown",
   "license": "MIT",
   "bin": {
-    "espresso": "index.js"
+    "espresso": "bin/espresso.sh"
   },
   "dependencies": {
     "coffee-script": "^1.10.0",
     "jscodeshift": "^0.3.7",
-    "node-dir": "^0.1.10",
     "nomnom": "^1.8.1"
   },
   "devDependencies": {
