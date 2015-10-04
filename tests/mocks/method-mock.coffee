@@ -1,4 +1,4 @@
-module.exports = {
+methods = {
   testFunc: () ->
     console.log test
 }

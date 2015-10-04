@@ -1,4 +1,4 @@
-export default {
+var methods = {
   testFunc() {
     return console.log(test);
   }
