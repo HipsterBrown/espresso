@@ -1,11 +1,13 @@
 {
   "name": "espresso",
-  "version": "0.1.0",
+  "version": "0.0.0-semantically-released",
   "description": "A coffee to ES2015 code converter",
   "main": "index.js",
   "scripts": {
+    "commit": "git-cz",
     "test": "standard index.js && tap tests/",
-    "reset": "rm -rf examples/*.es6"
+    "reset": "rm -rf examples/*.es6",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "author": "HipsterBrown",
   "license": "MIT",
@@ -18,7 +20,17 @@
     "nomnom": "^1.8.1"
   },
   "devDependencies": {
+    "commitizen": "^1.0.5",
+    "cz-conventional-changelog": "^1.1.2",
+    "semantic-release": "^4.3.5",
     "standard": "^5.3.1",
     "tap": "^2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HipsterBrown/espresso.git"
+  },
+  "czConfig": {
+    "path": "node_modules/cz-conventional-changelog"
   }
 }
