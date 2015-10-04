@@ -54,18 +54,70 @@ function core (file, api) {
       { type: 'ThisExpression' }
     ]
   }
-
-  root
-  .find(j.VariableDeclaration)
-  .filter(function (p) {
-    return p.node.start === 0
-  })
-  .remove()
+  var VAR_DECLARATION = {
+    expression: {
+      type: 'AssignmentExpression'
+    }
+  }
+  var ASSIGN_EXP = {
+    operator: '=',
+    left: {
+      type: 'Identifier'
+    }
+  }
 
   root
   .find(j.ExpressionStatement, CONTAINS_REQUIRE)
   .replaceWith(function (p) {
     return j.importDeclaration([j.importDefaultSpecifier(p.node.expression.left)], p.node.expression.right.arguments[0])
+  })
+
+  var variables = []
+  root
+  .find(j.VariableDeclaration)
+  .filter(function (p) {
+    return p.node.declarations[0].init === null
+  })
+  .forEach(function (p) {
+    variables = variables.concat(p.node.declarations.map(function (variable) {
+      return variable.id.name
+    }))
+  })
+  .remove()
+
+  root
+  .find(j.ExpressionStatement, VAR_DECLARATION)
+  .filter(function (p) {
+    return p.node.expression.left.type === 'Identifier'
+  })
+  .replaceWith(function (p) {
+    var matchIndex = variables.indexOf(p.node.expression.left.name)
+
+    if (matchIndex > -1) {
+      variables.splice(matchIndex, 1)
+      return j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), p.node.expression.right)])
+    } else {
+      return p.node
+    }
+  })
+
+  function findBlockParent (path) {
+    if (path.parent.node.type === 'BlockStatement') {
+      return path
+    } else {
+      return findBlockParent(path.parent)
+    }
+  }
+
+  root
+  .find(j.AssignmentExpression, ASSIGN_EXP)
+  .filter(function (p) {
+    return variables.indexOf(p.node.left.name) > -1 && p.node.parenthesizedExpression
+  })
+  .forEach(function (p) {
+    var matchIndex = variables.indexOf(p.node.left.name)
+    variables.splice(matchIndex, 1)
+    findBlockParent(p).insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), null)]))
   })
 
   root
