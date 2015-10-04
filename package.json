@@ -4,7 +4,7 @@
   "description": "A coffee to ES2015 code converter",
   "main": "index.js",
   "scripts": {
-    "test": "standard index.js",
+    "test": "standard index.js && tap tests/",
     "reset": "rm -rf examples/*.es6"
   },
   "author": "HipsterBrown",
