@@ -20,12 +20,10 @@ var opts = nomnom
     match: {
       abbr: 'm',
       help: 'File extensions to target in directory',
-      flag: true,
       default: '.coffee'
     },
     extension: {
       abbr: 'ext',
-      flag: true,
       help: 'The extension for transformed files, i.e. .js OR .es6',
       default: '.es6'
     },
