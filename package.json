@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "commit": "git-cz",
-    "test": "standard && tap tests/",
-    "test:coverage": "istanbul cover tests/*.js",
+    "test": "standard && node tests | tap-spec",
+    "test:coverage": "istanbul cover tests/",
     "reset": "cd examples/ && find . ! -name '*.coffee' -print0 | xargs -0 rm && cd ..",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
@@ -26,7 +26,8 @@
     "istanbul": "^0.3.22",
     "semantic-release": "^4.3.5",
     "standard": "^5.3.1",
-    "tap": "^2.0.0"
+    "tap": "^2.0.0",
+    "tap-spec": "^4.1.0"
   },
   "repository": {
     "type": "git",
