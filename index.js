@@ -3,18 +3,19 @@ module.exports = espresso
 var coffeeScript = require('coffee-script')
 var jsCodeShift = require('jscodeshift')
 var coreTransform = require('./transforms/core')
-// var jsxTransform = require('./transforms/jsx')
+var jsxTransform = require('./transforms/jsx')
 
 function espresso (content, opts) {
-  var jsContent = coffeeScript.compile(content, {bare: true})
+  var newContent = coffeeScript.compile(content, {bare: true})
+  var api = {jscodeshift: jsCodeShift}
 
-  var es6Content = coreTransform(
-    {
-      source: jsContent
-    },
-    {
-      jscodeshift: jsCodeShift
-    }
-  )
-  return es6Content
+  if (opts.core) {
+    newContent = coreTransform({source: newContent}, api)
+  }
+
+  if (opts.jsx) {
+    newContent = jsxTransform({source: newContent}, api)
+  }
+
+  return newContent
 }
