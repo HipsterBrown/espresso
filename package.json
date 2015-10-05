@@ -6,6 +6,7 @@
   "scripts": {
     "commit": "git-cz",
     "test": "standard && tap tests/",
+    "test:coverage": "istanbul cover tests/*.js",
     "reset": "cd examples/ && find . ! -name '*.coffee' -print0 | xargs -0 rm && cd ..",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
@@ -22,6 +23,7 @@
   "devDependencies": {
     "commitizen": "^1.0.5",
     "cz-conventional-changelog": "^1.1.2",
+    "istanbul": "^0.3.22",
     "semantic-release": "^4.3.5",
     "standard": "^5.3.1",
     "tap": "^2.0.0"

@@ -5,3 +5,4 @@ examples/*.jsx
 examples/*.js
 npm-debug.log
 *.swp
+coverage/
