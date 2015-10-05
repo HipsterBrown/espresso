@@ -1,7 +1,7 @@
 var test = require('tap').test
 var fs = require('fs')
 
-var espresso = require('../')
+var espresso = require('../../')
 var opts = {
   core: true
 }
@@ -28,8 +28,8 @@ test('Transforms "module.exports" statements to "export default" statements', fu
 test('Transforms object arrow function to object method', function (t) {
   t.plan(1)
 
-  var code = fs.readFileSync(__dirname + '/mocks/method-mock.coffee').toString()
-  var solution = fs.readFileSync(__dirname + '/mocks/method-solution.es6').toString()
+  var code = fs.readFileSync(__dirname + '/../mocks/method-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/method-solution.es6').toString()
   var newCode = espresso(code, opts)
 
   t.is(newCode, solution, 'returns correct object method')
@@ -38,8 +38,8 @@ test('Transforms object arrow function to object method', function (t) {
 test('Transforms fat arrow function into ES2015 arrow function', function (t) {
   t.plan(1)
 
-  var code = fs.readFileSync(__dirname + '/mocks/this-mock.coffee').toString()
-  var solution = fs.readFileSync(__dirname + '/mocks/this-solution.es6').toString()
+  var code = fs.readFileSync(__dirname + '/../mocks/this-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/this-solution.es6').toString()
   var newCode = espresso(code, opts)
 
   t.is(newCode, solution, 'returns correct arrow function')
