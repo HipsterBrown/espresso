@@ -75,7 +75,15 @@ function jsx (file, api) {
   .find(j.CallExpression, CONTAINS_FACTORY)
   .forEach(function (p) {
     var parentVar = findParentOfType(p, 'VariableDeclaration')
-    if (parentVar) {
+
+    if (parentVar && p.node.arguments[0].type === 'Identifier') {
+      root
+      .find(j.ImportDeclaration)
+      .forEach(function (importPath) {
+        if (importPath.node.specifiers[0].local.name === p.node.arguments[0].name) {
+          importPath.node.specifiers[0].local.name = parentVar.node.declarations[0].id.name
+        }
+      })
       parentVar.replace()
     }
   })
