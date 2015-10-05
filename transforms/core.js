@@ -1,36 +1,11 @@
 module.exports = core
 
+var findParentOfType = require('../utils/find-parent-of-type')
+
 function core (file, api) {
   var j = api.jscodeshift
   var root = j(file.source)
-  var CONTAINS_REQUIRE = {
-    expression: {
-      type: 'AssignmentExpression',
-      left: {
-        type: 'Identifier'
-      },
-      right: {
-        type: 'CallExpression',
-        callee: {
-          name: 'require'
-        }
-      }
-    }
-  }
-  var CONTAINS_FACTORY = {
-    expression: {
-      type: 'AssignmentExpression',
-      right: {
-        type: 'CallExpression',
-        callee: {
-          type: 'MemberExpression',
-          property: {
-            name: 'createFactory'
-          }
-        }
-      }
-    }
-  }
+
   var MODULE_EXPORTS = {
     expression: {
       type: 'AssignmentExpression',
@@ -65,11 +40,35 @@ function core (file, api) {
       type: 'Identifier'
     }
   }
+  var REQUIRE = {
+    callee: {
+      type: 'Identifier',
+      name: 'require'
+    }
+  }
 
   root
-  .find(j.ExpressionStatement, CONTAINS_REQUIRE)
-  .replaceWith(function (p) {
-    return j.importDeclaration([j.importDefaultSpecifier(p.node.expression.left)], p.node.expression.right.arguments[0])
+  .find(j.CallExpression, REQUIRE)
+  .forEach(function (p) {
+    var parentCall = p.parent.node.type === 'CallExpression' ? p.parent : false
+    var parentExpStat = findParentOfType(p, 'ExpressionStatement')
+
+    if (parentCall) {
+      var importIdent = j.identifier(parentExpStat.node.expression.left.name + 'Import')
+      var origIdent = parentExpStat.node.expression.left
+
+      parentExpStat.replace(
+        j.importDeclaration([j.importDefaultSpecifier(importIdent)], p.node.arguments[0])
+      )
+
+      parentExpStat.insertAfter(
+        j.variableDeclaration('var', [j.variableDeclarator(origIdent, j.callExpression(parentCall.node.callee, [importIdent]))])
+      )
+    } else {
+      parentExpStat.replace(
+        j.importDeclaration([j.importDefaultSpecifier(parentExpStat.node.expression.left)], p.node.arguments[0])
+      )
+    }
   })
 
   var variables = []
@@ -101,13 +100,25 @@ function core (file, api) {
     }
   })
 
-  function findBlockParent (path) {
-    if (path.parent.node.type === 'BlockStatement') {
-      return path
-    } else {
-      return findBlockParent(path.parent)
-    }
-  }
+  root
+  .find(j.VariableDeclaration)
+  .forEach(function (p) {
+    var varName = p.node.declarations[0].id.name
+    root
+    .find(j.ImportDeclaration)
+    .forEach(function (importPath) {
+      var name = importPath.node.specifiers[0].local.name
+      if (name === varName) {
+        var importIdent = j.identifier(name + 'Import')
+        var varIdent = p.node.declarations[0].init.arguments[0]
+        importPath.node.specifiers[0].local = importIdent
+
+        if (name === varIdent.name) {
+          varIdent.name = importIdent.name
+        }
+      }
+    })
+  })
 
   root
   .find(j.AssignmentExpression, ASSIGN_EXP)
@@ -117,12 +128,8 @@ function core (file, api) {
   .forEach(function (p) {
     var matchIndex = variables.indexOf(p.node.left.name)
     variables.splice(matchIndex, 1)
-    findBlockParent(p).insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), null)]))
+    p.parentPath.parentPath.parentPath.parentPath.parentPath.insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), p.node.right)]))
   })
-
-  root
-  .find(j.ExpressionStatement, CONTAINS_FACTORY)
-  .remove()
 
   root
   .find(j.ExpressionStatement, MODULE_EXPORTS)

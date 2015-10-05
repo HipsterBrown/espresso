@@ -1,5 +1,7 @@
 module.exports = jsx
 
+var findParentOfType = require('../utils/find-parent-of-type')
+
 function jsx (file, api) {
   var j = api.jscodeshift
   var root = j(file.source)
@@ -7,6 +9,14 @@ function jsx (file, api) {
   var REACT_DOM = {
     callee: {
       type: 'MemberExpression'
+    }
+  }
+  var CONTAINS_FACTORY = {
+    callee: {
+      type: 'MemberExpression',
+      property: {
+        name: 'createFactory'
+      }
     }
   }
 
@@ -39,17 +49,36 @@ function jsx (file, api) {
         }
       })
     } else if (params[1]) {
-      children.push(params[1])
+      if (params[1].type === 'Identifier') {
+        children.push(j.jsxExpressionContainer(params[1]))
+      } else {
+        children.push(params[1])
+      }
     }
 
     var openingEl = j.jsxOpeningElement(el)
     openingEl.attributes = attrs
 
-    var JSX = j.jsxElement(openingEl, j.jsxClosingElement(el))
-    JSX.children = children
+    var JSX
+    if (children.length > 0) {
+      JSX = j.jsxElement(openingEl, j.jsxClosingElement(el))
+      JSX.children = children
+    } else {
+      openingEl.selfClosing = true
+      JSX = j.jsxElement(openingEl, null)
+    }
 
     return JSX
   }
+
+  root
+  .find(j.CallExpression, CONTAINS_FACTORY)
+  .forEach(function (p) {
+    var parentVar = findParentOfType(p, 'VariableDeclaration')
+    if (parentVar) {
+      parentVar.replace()
+    }
+  })
 
   root
   .find(j.CallExpression, REACT_DOM)
