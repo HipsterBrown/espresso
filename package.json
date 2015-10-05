@@ -1,5 +1,5 @@
 {
-  "name": "espresso",
+  "name": "espresso-transformer",
   "version": "0.0.0-semantically-released",
   "description": "A coffee to ES2015 code converter",
   "main": "index.js",
