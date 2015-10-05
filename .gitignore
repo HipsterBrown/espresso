@@ -1,3 +1,7 @@
 .DS_Store
 node_modules/
 examples/*.es6
+examples/*.jsx
+examples/*.js
+npm-debug.log
+*.swp
