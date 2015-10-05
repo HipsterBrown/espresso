@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "commit": "git-cz",
-    "test": "standard index.js && tap tests/",
-    "reset": "rm -rf examples/*.es6",
+    "test": "standard && tap tests/",
+    "reset": "cd examples/ && find . ! -name '*.coffee' -print0 | xargs -0 rm && cd ..",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "author": "HipsterBrown",
