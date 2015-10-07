@@ -120,20 +120,20 @@ function core (file, api) {
       var matchIndex = variables.indexOf(p.parent.node.left.name)
       variables.splice(matchIndex, 1)
 
-      if (parentHasType(p.parent, 'SequenceExpression')) { 
+      if (parentHasType(p.parent, 'SequenceExpression')) {
         parentHasType(p, 'BlockStatement').insertBefore(
           j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.parent.node.left.name), null)])
-        ) 
+        )
       } else {
         p.parent.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.parent.node.left.name), p.parent.node.right)]))
       }
     } else if (variables.indexOf(p.node.left.name) > -1) {
-      var matchIndex = variables.indexOf(p.node.left.name)
-      variables.splice(matchIndex, 1)
+      var match = variables.indexOf(p.node.left.name)
+      variables.splice(match, 1)
 
-      if (findParentOfType(p, 'ExportDeclaration')) { 
+      if (findParentOfType(p, 'ExportDeclaration')) {
         findParentOfType(p, 'ExportDeclaration').insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), null)]))
-      } else  {
+      } else {
         p.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), p.node.right)]))
       }
     }
