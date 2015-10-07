@@ -55,6 +55,7 @@ if (pathStats.isDirectory()) {
 
 files.forEach(function (file) {
   if (path.extname(file) === opts.match) {
+    console.log('-----------------\n', file, '\n--------------------')
     var content = fs.readFileSync(file).toString()
     var es6Content = espresso(content, opts)
 
