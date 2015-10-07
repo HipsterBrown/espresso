@@ -1,6 +1,7 @@
 module.exports = core
 
 var findParentOfType = require('../utils/find-parent-of-type')
+var parentHasType = require('../utils/parent-has-type')
 
 function core (file, api) {
   var j = api.jscodeshift
@@ -71,6 +72,12 @@ function core (file, api) {
     }
   })
 
+  root
+  .find(j.ExpressionStatement, MODULE_EXPORTS)
+  .replaceWith(function (p) {
+    return j.exportDeclaration(true, p.node.expression.right)
+  })
+
   var variables = []
   root
   .find(j.VariableDeclaration)
@@ -89,14 +96,46 @@ function core (file, api) {
   .filter(function (p) {
     return p.node.expression.left.type === 'Identifier'
   })
-  .replaceWith(function (p) {
+  .forEach(function (p) {
     var matchIndex = variables.indexOf(p.node.expression.left.name)
 
     if (matchIndex > -1) {
       variables.splice(matchIndex, 1)
-      return j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), p.node.expression.right)])
-    } else {
-      return p.node
+
+      if (findParentOfType(p, 'IfStatement')) {
+        findParentOfType(p, 'IfStatement').insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), null)]))
+      } else {
+        p.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), p.node.expression.right)]))
+      }
+    }
+  })
+
+  root
+  .find(j.AssignmentExpression)
+  .filter(function (p) {
+    return p.node.left.type === 'Identifier' && !p.node.parenthesizedExpression && p.parent.node.type !== 'SequenceExpression'
+  })
+  .forEach(function (p) {
+    if (p.parent.node.type === 'AssignmentExpression' && variables.indexOf(p.parent.node.left.name) > -1) {
+      var matchIndex = variables.indexOf(p.parent.node.left.name)
+      variables.splice(matchIndex, 1)
+
+      if (parentHasType(p.parent, 'SequenceExpression')) { 
+        parentHasType(p, 'BlockStatement').insertBefore(
+          j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.parent.node.left.name), null)])
+        ) 
+      } else {
+        p.parent.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.parent.node.left.name), p.parent.node.right)]))
+      }
+    } else if (variables.indexOf(p.node.left.name) > -1) {
+      var matchIndex = variables.indexOf(p.node.left.name)
+      variables.splice(matchIndex, 1)
+
+      if (findParentOfType(p, 'ExportDeclaration')) { 
+        findParentOfType(p, 'ExportDeclaration').insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), null)]))
+      } else  {
+        p.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), p.node.right)]))
+      }
     }
   })
 
@@ -128,13 +167,7 @@ function core (file, api) {
   .forEach(function (p) {
     var matchIndex = variables.indexOf(p.node.left.name)
     variables.splice(matchIndex, 1)
-    p.parentPath.parentPath.parentPath.parentPath.parentPath.insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), p.node.right)]))
-  })
-
-  root
-  .find(j.ExpressionStatement, MODULE_EXPORTS)
-  .replaceWith(function (p) {
-    return j.exportDeclaration(true, p.node.expression.right)
+    parentHasType(p, 'BlockStatement').insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), null)]))
   })
 
   root

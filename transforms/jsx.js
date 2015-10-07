@@ -21,54 +21,79 @@ function jsx (file, api) {
   }
 
   function buildJSX (callExp) {
-    var name = callExp.callee.name || callExp.callee.property.name
-    var el = j.jsxIdentifier(name)
-    var params = callExp.arguments
-    var attrs = []
-    var children = []
+    if (callExp.callee.type !== 'FunctionExpression') {
+      var name = callExp.callee.name || callExp.callee.property.name
+      var el = j.jsxIdentifier(name)
+      var params = callExp.arguments
+      var attrs = []
+      var children = []
 
-    if (params[0] && params[0].properties) {
-      attrs = params[0].properties.map(function (prop) {
-        var jsxAttr = j.jsxAttribute(
-          j.jsxIdentifier(prop.key.name || prop.key.value),
-          prop.value.type !== 'Literal' ? j.jsxExpressionContainer(prop.value) : prop.value
-        )
+      if (params[0] && params[0].properties) {
+        attrs = params[0].properties.map(function (prop) {
+          var jsxAttr = j.jsxAttribute(
+            j.jsxIdentifier(prop.key.name || prop.key.value),
+            prop.value.type !== 'Literal' ? j.jsxExpressionContainer(prop.value) : prop.value
+          )
 
-        return jsxAttr
-      })
-    }
+          return jsxAttr
+        })
+      }
 
-    if (params[1] && params[1].elements) {
-      children = params[1].elements.map(function (element) {
-        if (element.type !== 'JSXElement') {
-          if (element.type === 'ConditionalExpression') {
-            return j.jsxExpressionContainer(element)
-          } else {
-            return buildJSX(element)
+      if (params[1] && params[1].elements) {
+        children = params[1].elements.map(function (element) {
+          if (element.type !== 'JSXElement') {
+            if (element.type === 'ConditionalExpression') {
+              return j.jsxExpressionContainer(element)
+            } else if (element.type === 'Literal') {
+              return element
+            } else {
+              return buildJSX(element)
+            }
           }
+        })
+      } else if (params[1]) {
+        if (params[1].type === 'Identifier' || params[1].type.match(/Expression/)) {
+          children.push(j.jsxExpressionContainer(params[1]))
+        } else {
+          children.push(params[1])
         }
-      })
-    } else if (params[1]) {
-      if (params[1].type === 'Identifier') {
-        children.push(j.jsxExpressionContainer(params[1]))
+      }
+
+      var openingEl = j.jsxOpeningElement(el)
+      openingEl.attributes = attrs
+
+      var JSX
+      if (children.length > 0) {
+        JSX = j.jsxElement(openingEl, j.jsxClosingElement(el))
+        JSX.children = children
       } else {
-        children.push(params[1])
+        openingEl.selfClosing = true
+        JSX = j.jsxElement(openingEl, null)
+      }
+
+      return JSX
+    } else {
+      var func = callExp.callee
+      var hasFor = func.body.body.filter(function (statement) { return statement.type === 'ForStatement' })
+
+      if (hasFor.length > 0) {
+        var forStatement = hasFor[0]
+        var obj = forStatement.init.expressions[1].right.object
+        var argName = obj.name.slice(0, -obj.name.length + 1)
+        return j.jsxExpressionContainer(
+          j.callExpression(
+            j.memberExpression(
+              obj,
+              j.identifier('map')
+            ),
+            [j.arrowFunctionExpression(
+              [j.identifier(argName)],
+              buildJSX(forStatement.body.body[1].expression.arguments[0])
+            )]
+          )
+        )
       }
     }
-
-    var openingEl = j.jsxOpeningElement(el)
-    openingEl.attributes = attrs
-
-    var JSX
-    if (children.length > 0) {
-      JSX = j.jsxElement(openingEl, j.jsxClosingElement(el))
-      JSX.children = children
-    } else {
-      openingEl.selfClosing = true
-      JSX = j.jsxElement(openingEl, null)
-    }
-
-    return JSX
   }
 
   root
