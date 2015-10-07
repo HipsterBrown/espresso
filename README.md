@@ -52,7 +52,6 @@ JSX transformer includes:
 - React component factory -> JSX element
 
 TODO:
-- [ ] destructuring
 - [ ] React.createElement
 
 
@@ -65,9 +64,3 @@ npm link
 espresso --help
 ```
 
-## See it in Action
-```bash
-espresso examples/
-```
-
-Then check out the example `.coffee` files with their `.es6` conterparts.
