@@ -42,7 +42,7 @@ function jsx (file, api) {
       if (params[1] && params[1].elements) {
         children = params[1].elements.map(function (element) {
           if (element.type !== 'JSXElement') {
-            if (element.type === 'ConditionalExpression') {
+            if (element.type !== 'CallExpression' && element.type.match(/Expression/)) {
               return j.jsxExpressionContainer(element)
             } else if (element.type === 'Literal') {
               return element
