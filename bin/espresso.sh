@@ -6,7 +6,7 @@ var nomnom = require('nomnom')
 var fs = require('fs')
 var path = require('path')
 
-var espresso = require('../index.js')
+var espresso = require('../dist/index.js')
 
 var opts = nomnom
   .script('espresso')
@@ -63,4 +63,3 @@ files.forEach(function (file) {
   }
 })
 console.log('Your files have been converted, disaster averted.')
-

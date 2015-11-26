@@ -4,3 +4,4 @@ examples/
 npm-debug.log
 *.swp
 coverage/
+dist/
