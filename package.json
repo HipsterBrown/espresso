@@ -16,7 +16,7 @@
     "espresso": "bin/espresso.sh"
   },
   "dependencies": {
-    "coffee-script": "^1.10.0",
+    "coffee-react": "^4.0.0",
     "jscodeshift": "^0.3.7",
     "nomnom": "^1.8.1"
   },
