@@ -16,6 +16,16 @@ test('Transforms "require" statements to "import" statements', function (t) {
   t.is(newCode, 'import test from "test";\n', 'returns correct import statement')
 })
 
+test('Transforms "require" statements which are not assigned', function(t) {
+  t.plan(2)
+
+  var code = 'require("test")'
+  var newCode = espresso(code, opts)
+
+  t.is(typeof newCode, 'string', 'returns string')
+  t.is(newCode, 'import "test";\n', 'returns correct import statement')
+})
+
 test('Transforms "module.exports" statements to "export default" statements', function (t) {
   t.plan(1)
 

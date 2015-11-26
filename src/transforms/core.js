@@ -2,6 +2,7 @@ module.exports = core
 
 var findParentOfType = require('../utils/find-parent-of-type')
 var parentHasType = require('../utils/parent-has-type')
+var throwError = require('../utils/throw-error')
 
 function core (file, api) {
   var j = api.jscodeshift
@@ -54,7 +55,7 @@ function core (file, api) {
     var parentCall = p.parent.node.type === 'CallExpression' ? p.parent : false
     var parentExpStat = findParentOfType(p, 'ExpressionStatement')
 
-    if (parentCall) {
+    if (parentCall && parentExpStat.node.expression.type === 'AssignmentExpression') {
       var importIdent = j.identifier(parentExpStat.node.expression.left.name + 'Import')
       var origIdent = parentExpStat.node.expression.left
 
@@ -65,9 +66,31 @@ function core (file, api) {
       parentExpStat.insertAfter(
         j.variableDeclaration('var', [j.variableDeclarator(origIdent, j.callExpression(parentCall.node.callee, [importIdent]))])
       )
-    } else {
+    } else if (parentExpStat.node.expression.type === 'CallExpression' && parentExpStat.node.expression.callee.type === 'CallExpression') {
+      var importName = j.identifier(p.node.arguments[0].value + 'Import')
+
       parentExpStat.replace(
-        j.importDeclaration([j.importDefaultSpecifier(parentExpStat.node.expression.left)], p.node.arguments[0])
+        j.importDeclaration([j.importDefaultSpecifier(importName)], p.node.arguments[0])
+      )
+
+      parentExpStat.insertAfter(
+        j.expressionStatement(
+          j.callExpression(importName, [])
+        )
+      )
+    } else {
+      var specifiers = []
+
+      if (parentExpStat.node.expression.left) {
+        if (parentExpStat.node.expression.left.type !== 'Identifier') {
+          return throwError(p)
+        }
+
+        specifiers = [j.importDefaultSpecifier(parentExpStat.node.expression.left)]
+      }
+
+      parentExpStat.replace(
+        j.importDeclaration(specifiers, p.node.arguments[0])
       )
     }
   })
@@ -146,6 +169,10 @@ function core (file, api) {
     root
     .find(j.ImportDeclaration)
     .forEach(function (importPath) {
+      if (importPath.node.specifiers.length === 0) {
+        return
+      }
+
       var name = importPath.node.specifiers[0].local.name
       if (name === varName) {
         var importIdent = j.identifier(name + 'Import')
