@@ -66,8 +66,13 @@ function core (file, api) {
         j.variableDeclaration('var', [j.variableDeclarator(origIdent, j.callExpression(parentCall.node.callee, [importIdent]))])
       )
     } else {
+      var specifiers = []
+
+      if (parentExpStat.node.expression.left)
+        specifiers = [j.importDefaultSpecifier(parentExpStat.node.expression.left)]
+
       parentExpStat.replace(
-        j.importDeclaration([j.importDefaultSpecifier(parentExpStat.node.expression.left)], p.node.arguments[0])
+        j.importDeclaration(specifiers, p.node.arguments[0])
       )
     }
   })
@@ -146,6 +151,9 @@ function core (file, api) {
     root
     .find(j.ImportDeclaration)
     .forEach(function (importPath) {
+      if (importPath.node.specifiers.length === 0)
+        return
+
       var name = importPath.node.specifiers[0].local.name
       if (name === varName) {
         var importIdent = j.identifier(name + 'Import')
