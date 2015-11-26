@@ -1,6 +1,6 @@
 module.exports = espresso
 
-var coffeeScript = require('coffee-script')
+var coffeeScript = require('coffee-react')
 var jsCodeShift = require('jscodeshift')
 var coreTransform = require('./transforms/core')
 var jsxTransform = require('./transforms/jsx')
