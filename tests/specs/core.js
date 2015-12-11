@@ -1,7 +1,7 @@
 var test = require('tap').test
 var fs = require('fs')
 
-var espresso = require('../../')
+var espresso = require('../../dist/')
 var opts = {
   core: true
 }

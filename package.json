@@ -2,9 +2,11 @@
   "name": "espresso-transformer",
   "version": "0.0.0-semantically-released",
   "description": "A coffee to ES2015 code converter",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "commit": "git-cz",
+    "build": "rm -rf dist; babel src/ --out-dir dist/",
+    "watch": "babel src/ --out-dir dist/ --watch",
     "test": "standard && node tests | tap-spec",
     "test:coverage": "istanbul cover tests/",
     "reset": "cd examples/ && find . ! -name '*.coffee' -print0 | xargs -0 rm && cd ..",
@@ -21,6 +23,7 @@
     "nomnom": "^1.8.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.1.18",
     "commitizen": "^1.0.5",
     "cz-conventional-changelog": "^1.1.2",
     "istanbul": "^0.3.22",
