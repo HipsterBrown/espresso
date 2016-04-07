@@ -16,7 +16,7 @@ test('Transforms "require" statements to "import" statements', function (t) {
   t.is(newCode, 'import test from "test";\n', 'returns correct import statement')
 })
 
-test('Transforms "require" statements which are not assigned', function(t) {
+test('Transforms "require" statements which are not assigned', function (t) {
   t.plan(2)
 
   var code = 'require("test")'
@@ -24,6 +24,17 @@ test('Transforms "require" statements which are not assigned', function(t) {
 
   t.is(typeof newCode, 'string', 'returns string')
   t.is(newCode, 'import "test";\n', 'returns correct import statement')
+})
+
+test('Transforms "require" statements which are immediately called', function (t) {
+  t.plan(2)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/called-require-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/called-require-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(typeof newCode, 'string', 'returns string')
+  t.is(newCode, solution, 'returns correct import followed by function call')
 })
 
 test('Transforms "module.exports" statements to "export default" statements', function (t) {
