@@ -30,9 +30,19 @@ function jsx (file, api) {
 
       if (params[0] && params[0].properties) {
         attrs = params[0].properties.map(function (prop) {
+          var value = j.jsxExpressionContainer(prop.value)
+
+          if (prop.value.type === 'Literal') {
+            if (typeof prop.value.value === 'string') {
+              value = prop.value
+            } else {
+              value = j.jsxExpressionContainer(prop.value)
+            }
+          }
+
           var jsxAttr = j.jsxAttribute(
             j.jsxIdentifier(prop.key.name || prop.key.value),
-            prop.value.type !== 'Literal' ? j.jsxExpressionContainer(prop.value) : prop.value
+            value
           )
 
           return jsxAttr
@@ -105,7 +115,7 @@ function jsx (file, api) {
       root
       .find(j.ImportDeclaration)
       .forEach(function (importPath) {
-        if (importPath.node.specifiers[0].local.name === p.node.arguments[0].name) {
+        if (importPath.node.specifiers.length && (importPath.node.specifiers[0].local.name === p.node.arguments[0].name)) {
           importPath.node.specifiers[0].local.name = parentVar.node.declarations[0].id.name
         }
       })
