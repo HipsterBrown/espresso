@@ -32,6 +32,15 @@ test('Transforms "React.DOM" element with props into JSX equivalent', function (
   t.is(newCode, '<div className="test" />;\n', 'returns correct JSX prop')
 })
 
+test('Transforms "React.DOM" element with non-string props into JSX equivalent', function (t) {
+  t.plan(1)
+
+  var code = 'React.DOM.div({isTest: true})'
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, '<div isTest={true} />;\n', 'returns correct JSX prop')
+})
+
 test('Transforms "React.DOM" element with Identifier props into JSX equiv', function (t) {
   t.plan(1)
 
