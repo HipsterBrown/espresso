@@ -1,1 +1,1 @@
-require('test')()
+require('test-formatting')()

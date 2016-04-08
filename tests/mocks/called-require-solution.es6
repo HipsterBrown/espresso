@@ -1,2 +1,2 @@
-import testImport from 'test';
-testImport();
+import testFormattingImport from 'test-formatting';
+testFormattingImport();
