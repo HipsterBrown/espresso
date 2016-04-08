@@ -1,0 +1,1 @@
+test = someFunction(require("test"))

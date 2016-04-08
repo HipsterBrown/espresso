@@ -37,6 +37,28 @@ test('Transforms "require" statements which are immediately called', function (t
   t.is(newCode, solution, 'returns correct import followed by function call')
 })
 
+test('Transforms assigned "require" statements which are immediately called', function (t) {
+  t.plan(2)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/called-assigned-require-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/called-assigned-require-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(typeof newCode, 'string', 'returns string')
+  t.is(newCode, solution, 'returns correct import followed by function call')
+})
+
+test('Transforms "require" statements which are used as arguments', function (t) {
+  t.plan(2)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/require-as-argument-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/require-as-argument-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(typeof newCode, 'string', 'returns string')
+  t.is(newCode, solution, 'returns correct import followed by function call')
+})
+
 test('Transforms "module.exports" statements to "export default" statements', function (t) {
   t.plan(1)
 
