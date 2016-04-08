@@ -20,6 +20,7 @@
   "dependencies": {
     "coffee-script": "^1.10.0",
     "jscodeshift": "^0.3.7",
+    "lodash.camelcase": "^4.1.0",
     "nomnom": "^1.8.1"
   },
   "devDependencies": {
