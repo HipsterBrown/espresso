@@ -1,5 +1,7 @@
 module.exports = core
 
+var camelCase = require('lodash.camelcase')
+
 var findParentOfType = require('../utils/find-parent-of-type')
 var parentHasType = require('../utils/parent-has-type')
 var throwError = require('../utils/throw-error')
@@ -78,7 +80,7 @@ function core (file, api) {
         )
       }
     } else if (parentExpStat.node.expression.type === 'CallExpression' && parentExpStat.node.expression.callee.type === 'CallExpression') {
-      var importName = j.identifier(p.node.arguments[0].value + 'Import')
+      var importName = j.identifier(camelCase(p.node.arguments[0].value) + 'Import')
 
       parentExpStat.replace(
         j.importDeclaration([j.importDefaultSpecifier(importName)], p.node.arguments[0])
