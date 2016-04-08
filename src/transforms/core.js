@@ -63,9 +63,20 @@ function core (file, api) {
         j.importDeclaration([j.importDefaultSpecifier(importIdent)], p.node.arguments[0])
       )
 
-      parentExpStat.insertAfter(
-        j.variableDeclaration('var', [j.variableDeclarator(origIdent, j.callExpression(parentCall.node.callee, [importIdent]))])
-      )
+      /*
+       checks to see if the parent CallExpression is calling the required module or the required module is being immediately called:
+
+       callingModule(require('test')) vs require('test')()
+      */
+      if (parentCall.node.arguments.length) {
+        parentExpStat.insertAfter(
+          j.variableDeclaration('var', [j.variableDeclarator(origIdent, j.callExpression(parentCall.node.callee, [importIdent]))])
+        )
+      } else {
+        parentExpStat.insertAfter(
+          j.variableDeclaration('var', [j.variableDeclarator(origIdent, j.callExpression(importIdent, []))])
+        )
+      }
     } else if (parentExpStat.node.expression.type === 'CallExpression' && parentExpStat.node.expression.callee.type === 'CallExpression') {
       var importName = j.identifier(p.node.arguments[0].value + 'Import')
 
