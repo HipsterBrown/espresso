@@ -50,9 +50,7 @@ Core (default) transformer includes:
 JSX transformer includes:
 - React.DOM elements -> JSX element
 - React component factory -> JSX element
-
-TODO:
-- [ ] React.createElement
+- React.createElement -> JSX element
 
 
 ## Up and Running (Development)
