@@ -19,14 +19,28 @@ function jsx (file, api) {
       }
     }
   }
+  var CONTAINS_ELEMENT = {
+    callee: {
+      type: 'MemberExpression',
+      property: {
+        name: 'createElement'
+      }
+    }
+  }
 
   function buildJSX (callExp) {
     if (callExp.callee.type !== 'FunctionExpression') {
       var name = callExp.callee.name || callExp.callee.property.name
-      var el = j.jsxIdentifier(name)
       var params = callExp.arguments
       var attrs = []
       var children = []
+
+      if (name === 'createElement') {
+        name = params[0].name
+        params.shift()
+      }
+
+      var el = j.jsxIdentifier(name)
 
       if (params[0] && params[0].properties) {
         attrs = params[0].properties.map(function (prop) {
@@ -62,7 +76,12 @@ function jsx (file, api) {
           }
         })
       } else if (params[1]) {
-        if (params[1].type === 'Identifier' || params[1].type.match(/Expression/)) {
+        // check to see if children argument is a createElement function call
+        if (params[1].type === 'CallExpression' && (params[1].callee.name || params[1].callee.property.name) === 'createElement') {
+          children.push(
+            buildJSX(params[1])
+          )
+        } else if (params[1].type === 'Identifier' || params[1].type.match(/Expression/)) {
           children.push(j.jsxExpressionContainer(params[1]))
         } else {
           children.push(params[1])
@@ -132,6 +151,24 @@ function jsx (file, api) {
     } else if (obj.type === 'Identifier' && (obj.name === 'DOM' || obj.name === 'D')) {
       return true
     }
+  })
+  .replaceWith(function (p) {
+    return buildJSX(p.node)
+  })
+
+  root
+  .find(j.CallExpression, CONTAINS_ELEMENT)
+  .filter(function (p) {
+    if (Array.isArray(p.parentPath.value)) {
+      // check to see if React.createElement is called within React.render
+      if (p.parentPath.parentPath.value.type === 'CallExpression' && p.parentPath.parentPath.value.callee.property.name === 'render') {
+        return true
+      }
+
+      return false
+    }
+
+    return true
   })
   .replaceWith(function (p) {
     return buildJSX(p.node)
