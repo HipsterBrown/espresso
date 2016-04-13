@@ -1,4 +1,5 @@
 var test = require('tap').test
+var fs = require('fs')
 
 var espresso = require('../../dist/')
 var opts = {
@@ -57,4 +58,32 @@ test('Transforms "React.DOM" element with children into JSX equi', function (t) 
   var newCode = espresso(code, opts)
 
   t.is(newCode, '<div><p>Test</p></div>;\n', 'returns correct JSX')
+})
+
+test('Transforms "React.createElement" into JSX equivalent', function (t) {
+  t.plan(1)
+
+  var code = 'React.createElement(TestComponent, {classes: ["test-class"], value: "test"})'
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, '<TestComponent classes={["test-class"]} value="test" />;\n', 'returns correct JSX')
+})
+
+test('Transforms "React.createElement" with children into JSX equivalent', function (t) {
+  t.plan(1)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/create-element-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/create-element-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, solution, 'returns correct arrow function')
+})
+
+test('Transforms nested "React.createElement" into JSX equivalent', function (t) {
+  t.plan(1)
+
+  var code = 'React.render React.createElement(TestComponent, {classes: ["test-class"], value: "test"})'
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, 'React.render(<TestComponent classes={["test-class"]} value="test" />);\n', 'returns correct JSX')
 })
