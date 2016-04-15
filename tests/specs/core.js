@@ -16,6 +16,17 @@ test('Transforms "require" statements to "import" statements', function (t) {
   t.is(newCode, 'import test from "test";\n', 'returns correct import statement')
 })
 
+test('Transforms inline "require" statements to top "import" statements', function (t) {
+  t.plan(2)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/inline-require-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/inline-require-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(typeof newCode, 'string', 'returns string')
+  t.is(newCode, solution, 'returns correct import at the top of the file')
+})
+
 test('Transforms "require" statements which are not assigned', function (t) {
   t.plan(2)
 
