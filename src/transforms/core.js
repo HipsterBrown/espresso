@@ -61,9 +61,9 @@ function core (file, api) {
       var importIdent = j.identifier(parentExpStat.node.expression.left.name + 'Import')
       var origIdent = parentExpStat.node.expression.left
 
-      parentExpStat.replace(
-        j.importDeclaration([j.importDefaultSpecifier(importIdent)], p.node.arguments[0])
-      )
+      var importDec = j.importDeclaration([j.importDefaultSpecifier(importIdent)], p.node.arguments[0])
+
+      parentExpStat.replace(importDec)
 
       /*
        checks to see if the parent CallExpression is calling the required module or the required module is being immediately called:
@@ -101,10 +101,17 @@ function core (file, api) {
 
         specifiers = [j.importDefaultSpecifier(parentExpStat.node.expression.left)]
       }
+      var importModule = j.importDeclaration(specifiers, p.node.arguments[0])
+      var parentExport = findParentOfType(p.parent, 'ExpressionStatement', MODULE_EXPORTS)
 
-      parentExpStat.replace(
-        j.importDeclaration(specifiers, p.node.arguments[0])
-      )
+      if (parentExport) {
+        parentExport.insertBefore(importModule)
+        parentExpStat.prune()
+      } else {
+        parentExpStat.replace(
+          importModule
+        )
+      }
     }
   })
 
@@ -138,8 +145,13 @@ function core (file, api) {
     if (matchIndex > -1) {
       variables.splice(matchIndex, 1)
 
-      if (findParentOfType(p, 'IfStatement')) {
-        findParentOfType(p, 'IfStatement').insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), null)]))
+      // if the assignment is done inside an IfStatement's test case, then place the variable declaration above the IfStatement
+      if (p.parent.value.type === 'IfStatement') {
+        try {
+          findParentOfType(p, 'IfStatement').insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), null)]))
+        } catch (e) {
+          throwError(p)
+        }
       } else {
         p.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), p.node.expression.right)]))
       }
