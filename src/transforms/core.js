@@ -115,24 +115,35 @@ function core (file, api) {
     }
   })
 
-  root
-  .find(j.ExpressionStatement, MODULE_EXPORTS)
-  .replaceWith(function (p) {
-    return j.exportDeclaration(true, p.node.expression.right)
-  })
-
+  var nullVariables = []
   var variables = []
   root
   .find(j.VariableDeclaration)
   .filter(function (p) {
-    return p.node.declarations[0].init === null
+    return p.node.declarations[0].init === null && (p.parent && p.parent.value.type !== 'ForInStatement')
   })
   .forEach(function (p) {
-    variables = variables.concat(p.node.declarations.map(function (variable) {
-      return variable.id.name
+    nullVariables = nullVariables.concat(p.node.declarations.map(function (variable) {
+      if (variable.init === null) {
+        return variable.id.name
+      } else {
+        if (p.parent.value.type === 'Program') {
+          variables.push(variable)
+        } else {
+          p.insertBefore(j.variableDeclaration('var', [variable]))
+        }
+      }
     }))
   })
   .remove()
+
+  root
+  .find(j.ExpressionStatement, MODULE_EXPORTS)
+  .forEach(function (exp) {
+    variables.forEach(function (variable) {
+      exp.insertBefore(j.variableDeclaration('var', [variable]))
+    })
+  })
 
   root
   .find(j.ExpressionStatement, VAR_DECLARATION)
@@ -140,13 +151,14 @@ function core (file, api) {
     return p.node.expression.left.type === 'Identifier'
   })
   .forEach(function (p) {
-    var matchIndex = variables.indexOf(p.node.expression.left.name)
+    var matchIndex = nullVariables.indexOf(p.node.expression.left.name)
 
     if (matchIndex > -1) {
-      variables.splice(matchIndex, 1)
+      nullVariables.splice(matchIndex, 1)
+      var parentBlock = findParentOfType(p, 'BlockStatement')
 
       // if the assignment is done inside an IfStatement's test case, then place the variable declaration above the IfStatement
-      if (p.parent.value.type === 'IfStatement') {
+      if (parentBlock && parentBlock.parent.value.type === 'IfStatement') {
         try {
           findParentOfType(p, 'IfStatement').insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), null)]))
         } catch (e) {
@@ -156,6 +168,12 @@ function core (file, api) {
         p.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), p.node.expression.right)]))
       }
     }
+  })
+
+  root
+  .find(j.ExpressionStatement, MODULE_EXPORTS)
+  .replaceWith(function (p) {
+    return j.exportDeclaration(true, p.node.expression.right)
   })
 
   root
