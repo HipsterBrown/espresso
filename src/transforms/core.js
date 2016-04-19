@@ -159,10 +159,16 @@ function core (file, api) {
 
       // if the assignment is done inside an IfStatement's test case, then place the variable declaration above the IfStatement
       if (parentBlock && parentBlock.parent.value.type === 'IfStatement') {
+        var scope = parentBlock.parent
+
+        while (scope.parent && scope.parent.value.type === 'IfStatement') {
+          scope = scope.parent
+        }
+
         try {
-          findParentOfType(p, 'IfStatement').insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), null)]))
+          scope.insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), null)]))
         } catch (e) {
-          throwError(p)
+          throwError(scope)
         }
       } else {
         p.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), p.node.expression.right)]))
