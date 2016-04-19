@@ -6,7 +6,7 @@ var nomnom = require('nomnom')
 var fs = require('fs')
 var path = require('path')
 
-var espresso = require('../dist/index.js')
+var espresso = require('../src/index.js')
 
 var opts = nomnom
   .script('espresso')
