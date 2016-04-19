@@ -1,6 +1,7 @@
 module.exports = jsx
 
 var findParentOfType = require('../utils/find-parent-of-type')
+var throwError = require('../utils/throw-error')
 
 function jsx (file, api) {
   var j = api.jscodeshift
@@ -40,7 +41,11 @@ function jsx (file, api) {
         params.shift()
       }
 
-      var el = j.jsxIdentifier(name)
+      try {
+        var el = j.jsxIdentifier(name)
+      } catch (e) {
+        return throwError(callExp)
+      }
 
       if (params[0] && params[0].properties) {
         attrs = params[0].properties.map(function (prop) {
