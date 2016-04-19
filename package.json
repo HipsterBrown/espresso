@@ -22,6 +22,7 @@
     "nomnom": "^1.8.1"
   },
   "devDependencies": {
+    "babel-eslint": "^6.0.2",
     "commitizen": "^1.0.5",
     "cz-conventional-changelog": "^1.1.2",
     "istanbul": "^0.3.22",
@@ -36,5 +37,8 @@
   },
   "czConfig": {
     "path": "node_modules/cz-conventional-changelog"
+  },
+  "standard": {
+    "parser": "babel-eslint"
   }
 }
