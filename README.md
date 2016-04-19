@@ -52,6 +52,9 @@ JSX transformer includes:
 - React component factory -> JSX element
 - React.createElement -> JSX element
 
+Backbone Classes transformer:
+- converts Backbone Classes created with CoffeScript into their Backbone.Class.extend() equivalent
+
 
 ## Up and Running (Development)
 After cloning this repo:
