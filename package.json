@@ -10,7 +10,8 @@
     "test": "standard && npm run build && node tests | tap-spec",
     "test:coverage": "istanbul cover tests/",
     "reset": "cd examples/ && find . ! -name '*.coffee' -print0 | xargs -0 rm && cd ..",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "prepublish": "npm run build"
   },
   "author": "HipsterBrown",
   "license": "MIT",
