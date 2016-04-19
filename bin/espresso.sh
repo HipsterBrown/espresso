@@ -36,6 +36,12 @@ var opts = nomnom
       flag: true,
       help: 'Transform any available React.DOM or Components to JSX',
       default: false
+    },
+    backbone: {
+      abbr: 'bb',
+      flag: true,
+      help: 'Transform any available Backbone Classes into their Backbone.extend equivalent',
+      default: false
     }
   })
   .parse()
