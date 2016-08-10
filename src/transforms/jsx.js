@@ -38,7 +38,8 @@ function jsx (file, api) {
     return object.type === 'CallExpression' &&
       (
         (object.callee.name || object.callee.property.name) === 'createElement' ||
-        (object.callee.object && object.callee.object.name).match(/D|DOM/)
+        (object.callee.object && object.callee.object.name) ? (object.callee.object && object.callee.object.name).match(/D|DOM/) : false
+        // ^ logic is a bit wild due to `this` object not having a `name` property, only `type: 'ThisStatement'`
       )
   }
 
@@ -84,7 +85,7 @@ function jsx (file, api) {
       if (params[1] && params[1].elements) {
         children = params[1].elements.map(function (element) {
           if (element.type !== 'JSXElement') {
-            if (element.type !== 'CallExpression' && element.type.match(/Expression/)) {
+            if (element.type !== 'CallExpression' && element.type.match(/Expression|Identifier/)) {
               return j.jsxExpressionContainer(element)
             } else if (element.type === 'Literal') {
               return element
