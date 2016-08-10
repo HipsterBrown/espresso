@@ -29,6 +29,19 @@ function jsx (file, api) {
     }
   }
 
+  function getChildren (array) {
+    array.shift()
+    return array
+  }
+
+  function isElement (object) {
+    return object.type === 'CallExpression' &&
+      (
+        (object.callee.name || object.callee.property.name) === 'createElement' ||
+        (object.callee.object && object.callee.object.name).match(/D|DOM/)
+      )
+  }
+
   function buildJSX (callExp) {
     if (callExp.callee.type !== 'FunctionExpression') {
       var name = callExp.callee.name || callExp.callee.property.name
@@ -81,16 +94,20 @@ function jsx (file, api) {
           }
         })
       } else if (params[1]) {
+        var childArray = params.length > 2 ? getChildren(params) : [params[1]]
+
+        childArray.forEach(function (child) {
+          if (isElement(child)) {
+            children.push(
+              buildJSX(child)
+            )
+          } else if (child.type === 'Identifier' || child.type.match(/Expression/)) {
+            children.push(j.jsxExpressionContainer(child))
+          } else {
+            children.push(child)
+          }
+        })
         // check to see if children argument is a createElement function call
-        if (params[1].type === 'CallExpression' && (params[1].callee.name || params[1].callee.property.name) === 'createElement') {
-          children.push(
-            buildJSX(params[1])
-          )
-        } else if (params[1].type === 'Identifier' || params[1].type.match(/Expression/)) {
-          children.push(j.jsxExpressionContainer(params[1]))
-        } else {
-          children.push(params[1])
-        }
       }
 
       var openingEl = j.jsxOpeningElement(el)
