@@ -87,3 +87,13 @@ test('Transforms nested "React.createElement" into JSX equivalent', function (t)
 
   t.is(newCode, 'React.render(<TestComponent classes={["test-class"]} value="test" />);\n', 'returns correct JSX')
 })
+
+test('Transforms nested child components JSX equivalent', function (t) {
+  t.plan(1)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/nested-children-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/nested-children-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, solution, 'returns correct JSX')
+})
