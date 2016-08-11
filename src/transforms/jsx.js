@@ -68,25 +68,30 @@ function jsx (file, api) {
         return throwError(callExp)
       }
 
-      if (params[0] && params[0].properties) {
-        attrs = params[0].properties.map(function (prop) {
-          var value = j.jsxExpressionContainer(prop.value)
+      // console.log(params[0].type === 'CallExpression' ? params[0] : null)
+      if (params[0]) {
+        if (params[0].properties) {
+          attrs = params[0].properties.map(function (prop) {
+            var value = j.jsxExpressionContainer(prop.value)
 
-          if (prop.value.type === 'Literal') {
-            if (typeof prop.value.value === 'string') {
-              value = prop.value
-            } else {
-              value = j.jsxExpressionContainer(prop.value)
+            if (prop.value.type === 'Literal') {
+              if (typeof prop.value.value === 'string') {
+                value = prop.value
+              } else {
+                value = j.jsxExpressionContainer(prop.value)
+              }
             }
-          }
 
-          var jsxAttr = j.jsxAttribute(
-            j.jsxIdentifier(prop.key.name || prop.key.value),
-            value
-          )
+            var jsxAttr = j.jsxAttribute(
+              j.jsxIdentifier(prop.key.name || prop.key.value),
+              value
+            )
 
-          return jsxAttr
-        })
+            return jsxAttr
+          })
+        } else if (params[0].type === 'CallExpression') {
+          attrs.push(j.jsxSpreadAttribute(params[0]))
+        }
       }
 
       if (params[1] && params[1].elements) {
