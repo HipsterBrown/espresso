@@ -35,12 +35,19 @@ function jsx (file, api) {
   }
 
   function isElement (object) {
+    var name
     return object.type === 'CallExpression' &&
       (
         (object.callee.name || object.callee.property.name) === 'createElement' ||
-        (object.callee.object && object.callee.object.name) ? (object.callee.object && object.callee.object.name).match(/D|DOM/) : false
+        (name = (object.callee.object && object.callee.object.name)) ? name.match(/D|DOM/) : false
         // ^ logic is a bit wild due to `this` object not having a `name` property, only `type: 'ThisStatement'`
       )
+  }
+
+  function isExpression (object) {
+    var type
+    return object.type === 'CallExpression' &&
+      (type = (object.callee && object.callee.object && object.callee.object.type)) ? type.match(/FunctionExpression|ThisExpression/) : false
   }
 
   function buildJSX (callExp) {
@@ -87,6 +94,8 @@ function jsx (file, api) {
           if (element.type !== 'JSXElement') {
             if (element.type !== 'CallExpression' && element.type.match(/Expression|Identifier/)) {
               return j.jsxExpressionContainer(element)
+            } else if (isExpression(element)) {
+              return j.jsxExpressionContainer(element)
             } else if (element.type === 'Literal') {
               return element
             } else {
@@ -102,7 +111,7 @@ function jsx (file, api) {
             children.push(
               buildJSX(child)
             )
-          } else if (child.type === 'Identifier' || child.type.match(/Expression/)) {
+          } else if (child.type === 'Identifier' || child.type.match(/Expression/) || isExpression(child)) {
             children.push(j.jsxExpressionContainer(child))
           } else {
             children.push(child)
