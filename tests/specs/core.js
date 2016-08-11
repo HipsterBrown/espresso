@@ -98,3 +98,13 @@ test('Transforms fat arrow function into ES2015 arrow function', function (t) {
 
   t.is(newCode, solution, 'returns correct arrow function')
 })
+
+test('Keeps declared variables in sequence at top of file', function (t) {
+  t.plan(1)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/variable-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/variable-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, solution, 'returns correct declarations')
+})
