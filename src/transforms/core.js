@@ -128,7 +128,7 @@ function core (file, api) {
         return variable.id.name
       } else {
         if (p.parent.value.type === 'Program') {
-          variables.push(variable)
+          p.insertAfter(j.variableDeclaration('var', [variable]))
         } else {
           p.insertBefore(j.variableDeclaration('var', [variable]))
         }
