@@ -257,7 +257,7 @@ function core (file, api) {
   root
   .find(j.CallExpression, FUNCTION_BIND)
   .replaceWith(function (p) {
-    return j.arrowFunctionExpression([], p.node.callee.body.body[0].argument.body)
+    return j.arrowFunctionExpression(p.node.callee.body.body[0].argument.params, p.node.callee.body.body[0].argument.body)
   })
   .find(j.Identifier, {name: '_this'})
   .replaceWith(j.identifier('this'))
