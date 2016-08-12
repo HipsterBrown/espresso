@@ -1,3 +1,3 @@
-export default () => {
-  return console.log(this);
+var test = response => {
+  return this.log(response);
 };

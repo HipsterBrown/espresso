@@ -1,2 +1,2 @@
-module.exports = () =>
-  console.log(@)
+test = (response) =>
+  @log(response)
