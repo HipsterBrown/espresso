@@ -109,11 +109,21 @@ test('Keeps declared variables in sequence at top of file', function (t) {
   t.is(newCode, solution, 'returns correct declarations')
 })
 
-test('Transforms for...in to for...in', function (t) {
+test('Transforms for...in to declared for loop', function (t) {
   t.plan(1)
 
   var code = fs.readFileSync(__dirname + '/../mocks/for-in-mock.coffee').toString()
   var solution = fs.readFileSync(__dirname + '/../mocks/for-in-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, solution, 'returns correct loop')
+})
+
+test('Transforms for...of to correct for...in', function (t) {
+  t.plan(1)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/for-of-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/for-of-solution.es6').toString()
   var newCode = espresso(code, opts)
 
   t.is(newCode, solution, 'returns correct loop')
