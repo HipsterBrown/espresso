@@ -186,6 +186,20 @@ function core (file, api) {
   })
 
   root
+  .find(j.ForInStatement, {
+    left: {
+      type: 'Identifier'
+    }
+  })
+  .replaceWith(function (exp) {
+    return j.forInStatement(
+      j.variableDeclaration('var', [exp.node.left]),
+      exp.node.right,
+      exp.node.body
+    )
+  })
+
+  root
   .find(j.ExpressionStatement, MODULE_EXPORTS)
   .replaceWith(function (p) {
     return j.exportDeclaration(true, p.node.expression.right)
@@ -223,25 +237,28 @@ function core (file, api) {
   root
   .find(j.VariableDeclaration)
   .forEach(function (p) {
-    var varName = p.node.declarations[0].id.name
-    root
-    .find(j.ImportDeclaration)
-    .forEach(function (importPath) {
-      if (importPath.node.specifiers.length === 0) {
-        return
-      }
+    var varName = (p.node.declarations[0].id && p.node.declarations[0].id.name)
 
-      var name = importPath.node.specifiers[0].local.name
-      if (name === varName) {
-        var importIdent = j.identifier(name + 'Import')
-        var varIdent = p.node.declarations[0].init.arguments[0]
-        importPath.node.specifiers[0].local = importIdent
-
-        if (name === varIdent.name) {
-          varIdent.name = importIdent.name
+    if (varName) {
+      root
+      .find(j.ImportDeclaration)
+      .forEach(function (importPath) {
+        if (importPath.node.specifiers.length === 0) {
+          return
         }
-      }
-    })
+
+        var name = importPath.node.specifiers[0].local.name
+        if (name === varName) {
+          var importIdent = j.identifier(name + 'Import')
+          var varIdent = p.node.declarations[0].init.arguments[0]
+          importPath.node.specifiers[0].local = importIdent
+
+          if (name === varIdent.name) {
+            varIdent.name = importIdent.name
+          }
+        }
+      })
+    }
   })
 
   root
