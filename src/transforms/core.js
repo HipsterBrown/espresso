@@ -177,6 +177,15 @@ function core (file, api) {
   })
 
   root
+  .find(j.SequenceExpression)
+  .filter(function (exp) { return exp.parent.value.type === 'ForStatement' })
+  .replaceWith(function (exp) {
+    return j.variableDeclaration('var', exp.node.expressions.map(function (expression) {
+      return j.variableDeclarator(expression.left, expression.right)
+    }))
+  })
+
+  root
   .find(j.ExpressionStatement, MODULE_EXPORTS)
   .replaceWith(function (p) {
     return j.exportDeclaration(true, p.node.expression.right)
