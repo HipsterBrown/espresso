@@ -128,3 +128,13 @@ test('Transforms for...of to correct for...in', function (t) {
 
   t.is(newCode, solution, 'returns correct loop')
 })
+
+test('Declare variables in IfStatement scope', function (t) {
+  t.plan(1)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/if-scope-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/if-scope-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, solution, 'returns variable declarations')
+})
