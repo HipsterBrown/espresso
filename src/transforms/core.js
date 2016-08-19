@@ -33,6 +33,7 @@ function core (file, api) {
       { type: 'ThisExpression' }
     ]
   }
+  /*
   var VAR_DECLARATION = {
     expression: {
       type: 'AssignmentExpression'
@@ -44,6 +45,7 @@ function core (file, api) {
       type: 'Identifier'
     }
   }
+ */
   var REQUIRE = {
     callee: {
       type: 'Identifier',
@@ -115,67 +117,6 @@ function core (file, api) {
     }
   })
 
-  var nullVariables = []
-  var variables = []
-  root
-  .find(j.VariableDeclaration)
-  .filter(function (p) {
-    return p.node.declarations[0].init === null && (p.parent && p.parent.value.type !== 'ForInStatement')
-  })
-  .forEach(function (p) {
-    nullVariables = nullVariables.concat(p.node.declarations.map(function (variable) {
-      if (variable.init === null) {
-        return variable.id.name
-      } else {
-        if (p.parent.value.type === 'Program') {
-          p.insertAfter(j.variableDeclaration('var', [variable]))
-        } else {
-          p.insertBefore(j.variableDeclaration('var', [variable]))
-        }
-      }
-    }))
-  })
-  .remove()
-
-  root
-  .find(j.ExpressionStatement, MODULE_EXPORTS)
-  .forEach(function (exp) {
-    variables.forEach(function (variable) {
-      exp.insertBefore(j.variableDeclaration('var', [variable]))
-    })
-  })
-
-  root
-  .find(j.ExpressionStatement, VAR_DECLARATION)
-  .filter(function (p) {
-    return p.node.expression.left.type === 'Identifier'
-  })
-  .forEach(function (p) {
-    var matchIndex = nullVariables.indexOf(p.node.expression.left.name)
-
-    if (matchIndex > -1) {
-      nullVariables.splice(matchIndex, 1)
-      var parentBlock = findParentOfType(p, 'BlockStatement')
-
-      // if the assignment is done inside an IfStatement's test case, then place the variable declaration above the IfStatement
-      if (parentBlock && parentBlock.parent.value.type === 'IfStatement') {
-        var scope = parentBlock.parent
-
-        while (scope.parent && scope.parent.value.type === 'IfStatement') {
-          scope = scope.parent
-        }
-
-        try {
-          scope.insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), null)]))
-        } catch (e) {
-          throwError(scope)
-        }
-      } else {
-        p.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.expression.left.name), p.node.expression.right)]))
-      }
-    }
-  })
-
   root
   .find(j.SequenceExpression)
   .filter(function (exp) { return exp.parent.value.type === 'ForStatement' })
@@ -199,13 +140,70 @@ function core (file, api) {
     )
   })
 
+  var variables = []
+  root
+  .find(j.VariableDeclaration)
+  .filter(function (p) {
+    return p.node.declarations[0].init === null && (p.parent && p.parent.value.type !== 'ForInStatement')
+  })
+  .forEach(function (p) {
+    p.node.declarations.forEach(function (variable) {
+      if (variable.init === null) {
+        var declaredVariables = []
+
+        root
+        .find(j.AssignmentExpression, {
+          operator: '=',
+          left: {
+            type: 'Identifier',
+            name: variable.id.name
+          }
+        })
+        .filter(function (exp) { return !exp.parent.value.type.match(/AssignmentExpression|VariableDeclarator/) })
+        .forEach(function (exp) {
+          var name = exp.node.left.name
+          var isDeclared = declaredVariables.indexOf(name) !== -1
+
+          if (!isDeclared && (exp.scope.node.start >= p.scope.node.start || (exp.scope.isGlobal && p.scope.isGlobal)) && !exp.parent.value.type.match(/ForStatement/)) {
+            var scope = exp.parent
+            declaredVariables.push(name)
+
+            while (!scope.value.type.match(/Program|IfStatement/)) {
+              scope = scope.parent
+            }
+
+            if (scope.value.type === 'Program') {
+              exp.parent.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(name), exp.node.right)]))
+            } else {
+              scope.insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(name), null)]))
+            }
+          }
+        })
+      } else {
+        if (p.parent.value.type === 'Program') {
+          p.insertAfter(j.variableDeclaration('var', [variable]))
+        } else {
+          p.insertBefore(j.variableDeclaration('var', [variable]))
+        }
+      }
+    })
+  })
+  .remove()
+
+  root
+  .find(j.ExpressionStatement, MODULE_EXPORTS)
+  .forEach(function (exp) {
+    variables.forEach(function (variable) {
+      exp.insertBefore(j.variableDeclaration('var', [variable]))
+    })
+  })
+
   root
   .find(j.ExpressionStatement, MODULE_EXPORTS)
   .replaceWith(function (p) {
     return j.exportDeclaration(true, p.node.expression.right)
   })
 
-  root
   .find(j.AssignmentExpression)
   .filter(function (p) {
     return p.node.left.type === 'Identifier' && !p.node.parenthesizedExpression && p.parent.node.type !== 'SequenceExpression'
@@ -261,6 +259,7 @@ function core (file, api) {
     }
   })
 
+  /*
   root
   .find(j.AssignmentExpression, ASSIGN_EXP)
   .filter(function (p) {
@@ -271,6 +270,7 @@ function core (file, api) {
     variables.splice(matchIndex, 1)
     parentHasType(p, 'BlockStatement').insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(p.node.left.name), null)]))
   })
+ */
 
   root
   .find(j.Property, CLASS_METHOD)
