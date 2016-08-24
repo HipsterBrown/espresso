@@ -89,7 +89,7 @@ function jsx (file, api) {
 
             return jsxAttr
           })
-        } else if (params[0].type === 'CallExpression') {
+        } else if (params[0].type.match(/CallExpression|Identifier|MemberExpression/)) {
           attrs.push(j.jsxSpreadAttribute(params[0]))
         }
       }
