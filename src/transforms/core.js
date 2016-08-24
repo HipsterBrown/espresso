@@ -33,19 +33,6 @@ function core (file, api) {
       { type: 'ThisExpression' }
     ]
   }
-  /*
-  var VAR_DECLARATION = {
-    expression: {
-      type: 'AssignmentExpression'
-    }
-  }
-  var ASSIGN_EXP = {
-    operator: '=',
-    left: {
-      type: 'Identifier'
-    }
-  }
- */
   var REQUIRE = {
     callee: {
       type: 'Identifier',
@@ -173,7 +160,16 @@ function core (file, api) {
             }
 
             if (scope.value.type === 'Program') {
-              exp.parent.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(name), exp.node.right)]))
+              if (exp.parent.value.type.match(/MemberExpression/)) {
+                scope = exp.parent
+                while (!scope.value.type.match(/VariableDeclaration|ExpressionStatement/)) {
+                  scope = scope.parent
+                }
+
+                scope.insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(name), null)]))
+              } else {
+                exp.parent.replace(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(name), exp.node.right)]))
+              }
             } else {
               scope.insertBefore(j.variableDeclaration('var', [j.variableDeclarator(j.identifier(name), null)]))
             }
