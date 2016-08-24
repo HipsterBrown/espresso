@@ -138,3 +138,13 @@ test('Declare variables in IfStatement scope', function (t) {
 
   t.is(newCode, solution, 'returns variable declarations')
 })
+
+test('Declare variables created for existential operator', function (t) {
+  t.plan(1)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/existential-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/existential-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, solution, 'returns variable declarations')
+})
