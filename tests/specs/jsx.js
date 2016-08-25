@@ -98,11 +98,21 @@ test('Transforms nested child components JSX equivalent', function (t) {
   t.is(newCode, solution, 'returns correct JSX')
 })
 
-test('Transforms ', function (t) {
+test('Transforms spreads correct JSX attributes', function (t) {
   t.plan(1)
 
   var code = fs.readFileSync(__dirname + '/../mocks/spread-attributes-mock.coffee').toString()
   var solution = fs.readFileSync(__dirname + '/../mocks/spread-attributes-solution.es6').toString()
+  var newCode = espresso(code, opts)
+
+  t.is(newCode, solution, 'returns correct JSX')
+})
+
+test('No JSX transform on React.PropTypes.arrayOf', function (t) {
+  t.plan(1)
+
+  var code = fs.readFileSync(__dirname + '/../mocks/react-proptypes-mock.coffee').toString()
+  var solution = fs.readFileSync(__dirname + '/../mocks/react-proptypes-solution.es6').toString()
   var newCode = espresso(code, opts)
 
   t.is(newCode, solution, 'returns correct JSX')
