@@ -183,7 +183,7 @@ function jsx (file, api) {
   .find(j.CallExpression, REACT_DOM)
   .filter(function (p) {
     var obj = p.node.callee.object
-    if (obj.type === 'MemberExpression' && obj.object.name === 'React') {
+    if (obj.type === 'MemberExpression' && obj.object.name === 'React' && obj.property.name !== 'PropTypes') {
       return true
     } else if (obj.type === 'Identifier' && (obj.name === 'DOM' || obj.name === 'D')) {
       return true
@@ -215,7 +215,8 @@ function jsx (file, api) {
   .find(j.CallExpression)
   .filter(function (p) {
     var funcName = p.node.callee.name
-    if (funcName) {
+    var reservedNames = ['Array', 'Number', 'String', 'Math', 'Date', 'FileReader', 'Function', 'Object', 'Promise', 'RegExp', 'Map', 'URL']
+    if (funcName && (reservedNames.indexOf(funcName) === -1)) {
       var firstLetter = funcName.slice(0, -funcName.length + 1)
       return /[A-Z]/.test(firstLetter)
     }
